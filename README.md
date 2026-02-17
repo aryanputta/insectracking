@@ -8,12 +8,16 @@ This repository provides a high-density, automated pipeline for extracting biome
 
 ## Visual Results
 
-### 1. High-Density Tracking Dashboard
-The tracker extracts 11 anatomical landmarks and 25+ texture features, providing a complete kinematic profile of the flight.
+### 1. Live Tracking Demo
+The system extracts 36 dense keypoints (11 anatomical + 25 features) in real-time. Note how the **skin-exclusion logic** prevents the head keypoint from jumping to the human finger.
+![Live Tracking Demo](docs/images/tracking_demo.gif)
+
+### 2. High-Density Tracking Dashboard
+The tracker provides a complete kinematic profile of the flight trajectory and multi-point spread.
 ![Tracking Dashboard](docs/images/tracking_dashboard.png)
 
-### 2. PCA Motion Compression
-We use Principal Component Analysis to distill the complex wing motions. The first 3 components capture **98.6% of the total variance**, proving the high fidelity of the parametric model.
+### 3. PCA Motion Compression
+We use Principal Component Analysis to distill the complex wing motions. The first 3 components capture **98.6% of the total variance**.
 ![PCA Decomposition](docs/images/pca_decomposition.png)
 
 ## Key Features
