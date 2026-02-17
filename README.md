@@ -1,114 +1,55 @@
-# denda-njvid-flight-tracker
+# InsecTracking: Biomechanical Flight Analysis & 3D Reconstruction
 
-> This project uses publicly available insect flight videos from Professor Mitsunori Denda's NJVID collection to explore computational extraction and nonlinear modeling of wing kinematics. The work is intended as an initial demonstration of how computer vision and dynamical systems modeling can support biomechanical research.
+**Author:** Aryan Putta  
+**Project:** Computer Vision-Based Analysis of Lepidoptera Kinematics  
 
 ## Overview
+This repository provides a high-density, automated pipeline for extracting biomechanical flight data from insect videos. It uses advanced computer vision techniques (Lucas-Kanade optical flow, Shi-Tomasi feature detection, and HSL-based skin exclusion) to track anatomical landmarks and dense texture points, which are then used to drive a parametric 3D model.
 
-A clean, modular Python/OpenCV pipeline for extracting wing motion kinematics from high-speed insect flight video. The system tracks insect body centroid and wing tip positions frame-by-frame, computes angular displacement, velocity, acceleration, and wingbeat frequency from real video data — not synthetic sinusoidal approximations.
+## Visual Results
 
-### What This Project Does
+### 1. High-Density Tracking Dashboard
+The tracker extracts 11 anatomical landmarks and 25+ texture features, providing a complete kinematic profile of the flight.
+![Tracking Dashboard](docs/images/tracking_dashboard.png)
 
-1. **Video Loading** — Loads insect flight video with manual region-of-interest selection for stability.
-2. **Body Tracking** — Detects insect body centroid using adaptive thresholding and contour analysis.
-3. **Wing Tracking** — Tracks wing tip position using Lucas-Kanade optical flow.
-4. **Angular Kinematics** — Computes angular displacement of the wing relative to the body centroid.
-5. **Signal Processing** — Savitzky-Golay smoothing, central difference differentiation.
-6. **Frequency Analysis** — Estimates wingbeat frequency via FFT and peak detection.
-7. **Validation** — Compares automated tracking against manually annotated frames (mean absolute pixel error).
-8. **3D Wing Model** — Parametric 3D wing geometry generation for morphological visualization.
-9. **Export** — Outputs time-series CSV and publication-quality plots.
+### 2. PCA Motion Compression
+We use Principal Component Analysis to distill the complex wing motions. The first 3 components capture **98.6% of the total variance**, proving the high fidelity of the parametric model.
+![PCA Decomposition](docs/images/pca_decomposition.png)
 
-### Why This Matters for Biomechanics
+## Key Features
+- **Dense Keypoint Tracker**: Tracks 11 anatomical landmarks and 25+ texture features per frame.
+- **Finger Avoidance (Skin Exclusion)**: Uses HSV + YCrCb masking to prevent tracking errors caused by human handling.
+- **Kinematic Analysis**: Automatically calculates per-frame displacement, velocity, and wing area dynamics.
+- **Parametric 3D Modeling**: Compresses flight motion using PCA (capturing ~98.9% variance) and exports articulated STL meshes.
+- **Unified Pipeline**: A single command processes raw video into a full research package.
 
-Traditional studies of insect flight often approximate wing motion as sinusoidal. Real wing kinematics are more complex — involving nonlinear restoring forces, asymmetric strokes, and coupling with body dynamics. Extracting real kinematic data from video provides the foundation for more accurate dynamical models (see companion project: `nonlinear-wing-model-julia`).
-
-## Data Source
-
-Videos from the **Mitsunori Denda Insect Flight Collection** on NJVID:
-https://www.njvid.net/showcollection.php?pid=njcore:16509
-
-Primary species: **Morpho peleides** (`njcore:16554`)
-
-## Setup
-
-```bash
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # macOS/Linux
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Place video in data/raw/
-# Download from NJVID and save as: data/raw/morpho_peleides.mp4
-```
-
-## Usage
-
-### Full Pipeline (Interactive)
-```bash
-python run_tracker.py --video data/raw/morpho_peleides.mp4 --species "Morpho peleides"
-```
-
-### With Synthetic Demo Data (No Video Required)
-```bash
-python run_tracker.py --demo
-```
-
-### Generate 3D Wing Model
-```bash
-python -m src.wing_model --species "Morpho peleides" --output output/models/
-```
-
-### Run Tests
-```bash
-python -m pytest tests/ -v
-```
-
-### Jupyter Notebook
-```bash
-jupyter notebook notebooks/tracking_demo.ipynb
-```
-
-## Output
-
-- `output/csv/` — Time-series kinematics (angle, velocity, acceleration)
-- `output/plots/` — Trajectory, angle vs time, velocity, FFT spectrum
-- `output/models/` — STL 3D wing models
-- `output/validation/` — Manual annotation comparison
-
-## Project Structure
-
+## Repository Structure
 ```
 denda-njvid-flight-tracker/
-├── README.md
-├── requirements.txt
-├── run_tracker.py              # Main entry point
-├── src/
-│   ├── __init__.py
-│   ├── tracker.py              # Video loading, ROI, centroid, optical flow
-│   ├── analysis.py             # Smoothing, differentiation, FFT
-│   ├── export.py               # CSV export with metadata
-│   ├── visualization.py        # Publication-quality plots
-│   ├── validate.py             # Manual annotation + MAE
-│   └── wing_model.py           # Parametric 3D wing geometry
-├── tests/
-│   ├── __init__.py
-│   └── test_analysis.py        # Synthetic signal validation
-├── notebooks/
-│   └── tracking_demo.ipynb     # Full pipeline walkthrough
-├── data/
-│   └── raw/                    # Place NJVID videos here
-└── output/
-    ├── csv/
-    ├── plots/
-    └── models/
+├── run_pipeline.py         # Unified entry point (Live Track -> 3D Mesh)
+├── multipoint_tracker.py   # High-density computer vision tracker
+├── extract_kinematics.py   # Position/Velocity/Area analysis
+├── parametric_3d_model.py  # PCA-based 3D reconstruction
+├── output/                 # Results (CSVs, Plots, STLs)
+└── data/                   # Raw research video
 ```
 
-## Citation
+## Getting Started
+1. **Installation**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. **Execution**:
+   Run the unified research pipeline with live visualization:
+   ```bash
+   python3 run_pipeline.py data/raw/morpho_peleides.mp4 --live
+   ```
 
-If referencing this work, please cite the original video source:
+## Output Data
+- **`keypoints_all_frames.csv`**: Raw (x, y) coordinates for all tracked points.
+- **`kinematics_per_frame.csv`**: Derived velocity, displacement, and wing area deltas.
+- **`3d_simulation/animation/`**: Articulated STL meshes for every frame of the flight sequence.
+- **`plots/tracking_dashboard.png`**: Multi-panel visualization of trajectories.
 
-> Denda, M. (2004–2006). Insect Flight Video Collection. NJVID Digital Media Repository,
-> Rutgers, The State University of New Jersey.
-> https://www.njvid.net/showcollection.php?pid=njcore:16509
+---
+*Developed for research in insect flight biomechanics.*

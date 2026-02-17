@@ -1,5 +1,32 @@
-output/
-data/
-__pycache__/
+# Local Environment
 .venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local Data (Protected/Large)
+data/
+output/
+*.mp4
+*.avi
+*.csv
+*.stl
+*.png
+
+# Allow README visuals
+!docs/images/**/*.png
+
+# IDE & OS
 .DS_Store
+.vscode/
+.idea/
+.spyderproject
+.ipynb_checkpoints/
+
+# Metadata
+.git/
+.gitignore
+research_package.zip
