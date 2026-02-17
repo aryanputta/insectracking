@@ -97,8 +97,8 @@ def isolate_butterfly(frame, prev_center=None, prev_area=None):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     h_img, w_img = frame.shape[:2]
 
-    # HSV mask for Morpho blue/teal wings
-    mask = cv2.inRange(hsv, np.array([75, 25, 25]), np.array([135, 255, 255]))
+    # Brilliant Morpho blue HSV mask (Saturation > 100 for iridescence)
+    mask = cv2.inRange(hsv, np.array([88, 100, 50]), np.array([130, 255, 255]))
 
     # Morphological cleanup
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
@@ -110,6 +110,12 @@ def isolate_butterfly(frame, prev_center=None, prev_area=None):
     if n_labels <= 1:
         return None, None, 0
 
+    # Create skin mask to identify where the human hand/wrist is
+    skin_mask_img = create_skin_mask(frame)
+    # Dilate skin mask moderately to catch wristband edge
+    kernel_skin = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
+    skin_dilated = cv2.dilate(skin_mask_img, kernel_skin)
+
     best_idx, best_score = -1, -1
     for i in range(1, n_labels):
         area = stats[i, cv2.CC_STAT_AREA]
@@ -118,10 +124,23 @@ def isolate_butterfly(frame, prev_center=None, prev_area=None):
         bh = stats[i, cv2.CC_STAT_HEIGHT]
         aspect = max(bw, bh) / (min(bw, bh) + 1)
 
-        if area < 800:          # too small
+        if area < 400:          # lower threshold for flight segments
             continue
-        if aspect > 5.0:        # too elongated (wristband)
+        if aspect > 7.0:        # standard aspect rejection
             continue
+            
+        # Robust Wristband Rejection:
+        # Rejects segments that overlap significantly with the skin region (like a watch/band).
+        # We use a strict 15% overlap for smaller segments (wristband size).
+        obj_mask = (labels == i).astype(np.uint8) * 255
+        overlap_area = cv2.countNonZero(cv2.bitwise_and(obj_mask, skin_dilated))
+        
+        if area < 5000: # Typical wing lobe size or wristband
+            if overlap_area > (area * 0.15): # Very strict for wristband-sized objects
+                continue
+        else: # Large combined component
+            if overlap_area > (area * 0.5): # Relaxed for whole butterfly
+                continue
 
         score = float(area)
 
