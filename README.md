@@ -5,7 +5,7 @@
 
 ---
 
-## 🦋 Research Pipeline Overview
+## Research Pipeline Overview
 This project provides an end-to-end framework for extracting 3D biomechanical flight data from high-resolution insect videos. By combining dense computer vision tracking with Principal Component Analysis (PCA), we reconstruct articulated 3D motions from 2D video sources.
 
 ### Core Stages
@@ -16,7 +16,7 @@ This project provides an end-to-end framework for extracting 3D biomechanical fl
 
 ---
 
-## 📊 Visual Results
+## Visual Results
 
 ### 1. High-Density Tracking Demo
 The system tracks **36 keypoints** (11 anatomical landmarks + 25 texture features).  
